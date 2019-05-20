@@ -1,5 +1,9 @@
 package utils
 
+import (
+	"math/rand"
+	"time"
+)
 
 const OK = 0
 const NOTLOGIN = 1
@@ -12,4 +16,10 @@ const MATHERR  = 7
 const CALLERR = 8
 const DATABASEERR  = 9
 const METHODERR = 10
+
+
+func GenerateRandom() int{
+	rand.Seed(time.Now().Unix())
+	return rand.Int()
+}
 

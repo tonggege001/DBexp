@@ -7,10 +7,13 @@ import (
 )
 
 func main(){
+
 	model.InitMysql()
 	http.HandleFunc("/login", apis.Login)
-	http.HandleFunc("/flight_info",apis.FlightInfo)
-
+	http.HandleFunc("/get_flight_info",apis.FlightInfo)				//
+	http.HandleFunc("/post_flight_info",apis.AddFlightInfo)
+	http.HandleFunc("/put_flight_info",apis.ChangeFlightInfo)
+	http.HandleFunc("/get_book_info",apis.GetBookInfo)
 	/*
 	http.HandleFunc("/login",apis.WeiboCall)								//微博的回调地址
 	http.HandleFunc("/login_weibo",apis.VerifyWeibo)					//设置访问的路由

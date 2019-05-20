@@ -7,6 +7,7 @@ import (
 	"net/http"
 )
 
+//检查登录的Token
 func TokenCheck(r *http.Request) (bool,int,map[string]interface{}){
 	retMap := make(map[string]interface{})
 	resq := utils.Json2Map(r)
