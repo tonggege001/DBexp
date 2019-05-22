@@ -1,8 +1,8 @@
 package main
 
 import (
-	"TicketBook/apis"
-	"TicketBook/model"
+	"DBexp/apis"
+	"DBexp/model"
 	"net/http"
 )
 

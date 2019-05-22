@@ -1,7 +1,7 @@
 package model
 
 import (
-	"TicketBook/utils"
+	"DBexp/utils"
 	"log"
 	"time"
 )
