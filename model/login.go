@@ -84,6 +84,23 @@ func GetUidByToken(token string)(int,error){
 }
 
 
+func GetNameByUid(uid int)(string,error){
+	tx := MysqlDB
+	rows, err := tx.Query("select name from user_info where uid=?", uid)
+	if err != nil{
+		return "",err
+	}
+
+	name := ""
+	for rows.Next(){
+		err := rows.Scan(&name)
+		if err != nil{
+			return "",err
+		}
+	}
+
+	return name,nil
+}
 
 
 

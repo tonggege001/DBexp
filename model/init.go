@@ -2,7 +2,6 @@ package model
 
 import (
 	"database/sql"
-	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
 )
@@ -19,7 +18,5 @@ func InitMysql(){
 	}
 
 	MysqlDB.SetMaxOpenConns(10)
-	_, err = MysqlDB.Query("select uid from user_login where uid=?",10)
-	fmt.Printf(err.Error())
 	return
 }

@@ -172,7 +172,7 @@ func ChangeFlightInfo(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	err = model.ChangeFlightInfo(fid, ftype.(string),from.(string),to.(string),btime,etime,food.(bool), (int)(sitenum.(float64)),income.(float64))
+	err = model.ChangeFlightInfo((int)(fid.(float64)), ftype.(string),from.(string),to.(string),btime,etime,food.(bool), (int)(sitenum.(float64)),income.(float64))
 	if err != nil{
 		log.Printf("ChangeFlightInfo model.AddFlightInfo error, err=%v",err)
 		log.Printf("fid=%v, ftype=%v, from=%v, to=%v, btime=%v, etime=%v, food=%v, sitenum=%v, income=%v",fid, ftype.(string),from.(string),to.(string),btime,etime,food.(bool),sitenum,income.(float64) )
