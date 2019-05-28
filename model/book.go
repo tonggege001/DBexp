@@ -8,9 +8,9 @@ import (
 
 func GetBookInfo(t time.Time, fid int, uid int)(map[string]interface{},bool){
 	tx := MysqlDB
-
+	ok := false
 	bi := make(map[string]interface{})
-	rows,err := tx.Query("select bookid,book_uid,user_book.uid,time,cost,extre,siteid from user_book,flight_site where user_book.fid=flight_site.fid and user_book.uid=flight_site.uid and user_book.fid=? and (user_book.book_uid=? or user_book.uid=?) and state != ?",
+	rows,err := tx.Query("select bookid,book_uid,user_book.uid,time,cost,extra,siteid from user_book,flight_site where user_book.fid=flight_site.fid and user_book.uid=flight_site.uid and user_book.fid=? and (user_book.book_uid=? or user_book.uid=?) and state != ?",
 	fid,uid,uid,3)
 	if err != nil{
 		log.Printf("GetBookInfo tx.Query error, err=%v",err)
@@ -38,9 +38,10 @@ func GetBookInfo(t time.Time, fid int, uid int)(map[string]interface{},bool){
 		bi["income"] = cost
 		bi["extra"] = extre
 		bi["siteid"] = siteid
+		ok = true
 		break
 	}
-	return bi,true
+	return bi,ok
 }
 
 func BookFlight(bookUid int, uiduid int, fid int, t time.Time, cost float64,extra string, siteid int)(int,error){
@@ -202,7 +203,7 @@ func DeleteMoneyInfo(bookid int)(float64,error){
 func GetOffTimeByFid(fid int)(time.Time,error){
 	tx := MysqlDB
 	t := time.Now()
-	rows,err := tx.Query("select time_begin from flight_info where bookid=?",fid)
+	rows,err := tx.Query("select time_begin from flight_info where fid=?",fid)
 
 	if err != nil{
 		log.Printf("GetOffTimeByFid tx.Query error, err=%v",err)
@@ -262,8 +263,7 @@ func GetTicketInfo(bookid int,uid int, fid int,siteid int)(map[string]interface{
 	mmap := make(map[string]interface{})
 	tx := MysqlDB
 
-	rows,err := tx.Query("select take_ticket_info.id,user_info.name,take_ticket_info.time,ftype,city_from,city_to,take_ticket_info.offtime,take_ticket_info.extra" +
-		"from take_ticket_info,user_info,flight_info where take_ticket_info.bookid=? and user_info.uid=take_ticket_info.uid and flight_info.fid=take_ticket_info.fid",bookid)
+	rows,err := tx.Query("select take_ticket_info.id,user_info.name,take_ticket_info.time,ftype,city_from,city_to,take_ticket_info.offtime,take_ticket_info.extra from take_ticket_info,user_info,flight_info where take_ticket_info.bookid=? and user_info.uid=take_ticket_info.uid and flight_info.fid=take_ticket_info.fid",bookid)
 	if err != nil{
 		log.Printf("GetTicketInfo tx.Query error, err=%v",err)
 		return mmap, err
@@ -285,7 +285,7 @@ func GetTicketInfo(bookid int,uid int, fid int,siteid int)(map[string]interface{
 
 		mmap["id"] = id
 		mmap["name"] = name
-		mmap["ttime"] = utils.GetTimeStrByTime(ttime)
+		mmap["time"] = utils.GetTimeStrByTime(ttime)
 		mmap["ftype"] = ftype
 		mmap["city_from"] = cityFrom
 		mmap["city_to"] = cityTo
@@ -325,9 +325,9 @@ func MakeMoneyInfo(bookid int, uid int, moneyIn float64, moneyOut float64, money
 	rows.Close()
 	//插入元素
 	if flag == 0{
-		stmt, err := tx.Prepare("insert into money_info(bookid,uid, money_in,money_out,money,time) VALUES (?,?,?,?,?)")
+		stmt, err := tx.Prepare("insert into money_info(bookid, uid, money_in,money_out, money,time) VALUES (?,?,?,?,?,?)")
 		if err != nil{
-			log.Printf("MakeTicketInfo tx.Prepare error, err=%v",err)
+			log.Printf("MakeMoneyInfo tx.Prepare error, err=%v",err)
 			return err
 		}
 		_, err = stmt.Exec(bookid,uid,moneyIn,moneyOut,money,t)
@@ -344,8 +344,7 @@ func GetMoneyInfo(bookid int,fid int) (map[string]interface{},error){
 	mmap := make(map[string]interface{})
 	tx := MysqlDB
 
-	rows,err := tx.Query("select money_info.mmid,user_book.book_uid,user_book.uid,ftype,flight_info.time_begin,money_info.money_in,money_info.money_out,money_info.money where"+
-		"money_info.bookid=? and user_book.bookid=? and flight_info=? and money_info.bookid = ?",bookid,bookid,fid,bookid)
+	rows,err := tx.Query("select money_info.miid,user_book.book_uid,user_book.uid,ftype,flight_info.time_begin,money_info.money_in,money_info.money_out,money_info.money from user_book,money_info,flight_info where user_book.bookid=? and flight_info.fid=? and money_info.bookid = ?",bookid,fid,bookid)
 	if err != nil{
 		log.Printf("GetMoneyInfo tx.Query error, err=%v",err)
 		return mmap, err

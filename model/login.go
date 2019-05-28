@@ -3,33 +3,34 @@ package model
 import (
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 //验证是否存在该用户
-func VerifyUid(uid int)(bool, error){
+func VerifyUid(uid int)(bool,int, error){
 	tx := MysqlDB
 
-	rows,err := tx.Query("select uid from user_info where uid=?",uid)
+	rows,err := tx.Query("select uid,user_info.type from user_info where uid=?",uid)
 	if err != nil{
 		//TODO 修改成查询失败的处理
-		return false,errors.New("VerifyUid Query error")
+		return false,-1,errors.New("VerifyUid Query error")
 	}
 	defer rows.Close()
 
 	uidDb := 0
-
+	uidType := -1
 	for rows.Next(){
-		err := rows.Scan(&uidDb)
+		err := rows.Scan(&uidDb, &uidType)
 		if err != nil{
-			return false,errors.New(fmt.Sprintf("VerifyUid uid scan error, err = %v", err))
+			return false,-1,errors.New(fmt.Sprintf("VerifyUid uid scan error, err = %v", err))
 		}
 		break
 	}
 	if uidDb != uid {
-		return false,nil
+		return false,-1,nil
 	}
 
-	return true,nil
+	return true,uidType,nil
 }
 
 func GetTokenByUid(uid int)(string, error){
@@ -53,11 +54,11 @@ func GetTokenByUid(uid int)(string, error){
 		return tokenStr, nil
 	}else{
 		//插入新的字符串
-		_, err := tx.Query("insert into user_login(uid, token) values (?,?)",uid,string(uid))
+		_, err := tx.Query("insert into user_login(uid, token) values (?,?)",uid,strconv.Itoa(uid))
 		if err != nil{
 			return "", err
 		}else{
-			return string(uid), nil
+			return strconv.Itoa(uid), nil
 		}
 	}
 }

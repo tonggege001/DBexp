@@ -29,6 +29,7 @@ func GetFlightInfoByTimeFromTo(btime time.Time,etime time.Time, from string, to 
 	defer rows.Close()
 	for rows.Next(){
 		f := FlightInfo{}
+
 		err := rows.Scan(&f.Fid, &f.FType, &f.TimeBegin, &f.TimeEnd, &f.CityFrom, &f.CityTo, &f.Food, &f.SiteNum, &f.Income)
 		if err != nil{
 			log.Printf("GetFlightInfoByTimeFromTo row Scan error, err=%v", err)
@@ -71,19 +72,14 @@ timeEnd time.Time, food bool, sitnum int, income float64)(int,error){
 		return 0, err
 	}
 
-	res, err := stmt.Exec(fid,ftype,cityFrom,cityTo,timeBegin,timeEnd,food,sitnum,income)
+	_, err = stmt.Exec(fid,ftype,cityFrom,cityTo,timeBegin,timeEnd,food,sitnum,income)
 	if err != nil{
 		log.Printf("AddFlightInfo stmt.Exec error, err=%v",err)
 		return 0,err
 	}
 	defer stmt.Close()
 
-	id,err := res.LastInsertId()
-	if err != nil{
-		return 0,nil
-	}else{
-		return int(id), nil
-	}
+	return fid,nil
 }
 
 func ChangeFlightInfo(fid int, ftype string, cityFrom string, cityTo string,timeBegin time.Time,

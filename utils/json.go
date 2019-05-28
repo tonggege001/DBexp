@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"log"
 	"net/http"
 )
@@ -24,12 +25,12 @@ func JSON(data *map[string]interface{}) []byte{
 func Json2Map(r *http.Request) map[string]interface{}{
 	defer RecoverResolve("Json2Map")
 	m := make(map[string]interface{})
-	data := make([]byte,0)
-	_, err := r.Body.Read(data)
+	data, err := ioutil.ReadAll(r.Body)
 	if err != nil{
-		log.Printf("Json2Map r.Body.Read error, err=%v",err)
+		log.Printf("Json2Map ioutil.ReadAll error,err=%v",err)
 		return m
 	}
+
 	defer r.Body.Close()
 	err = json.Unmarshal(data, &m)
 	if err != nil{

@@ -15,7 +15,7 @@ func FlightInfo(w http.ResponseWriter, r *http.Request){
 	}
 	retMap := make(map[string]interface{})
 
-	if r.Method != "GET"{
+	if r.Method != "POST"{
 		retMap["code"] = utils.METHODERR
 		utils.SendJson(&retMap,w)
 		return
@@ -58,6 +58,7 @@ func FlightInfo(w http.ResponseWriter, r *http.Request){
 		flMap["begin"] = utils.GetTimeStrByTime(f.TimeBegin)
 		flMap["end"] = utils.GetTimeStrByTime(f.TimeEnd)
 		flMap["site_not_ok"] = model.GetSiteBookIDByFid(f.Fid)
+		flMap["sitenum"] = f.SiteNum
 		finfol = append(finfol,flMap)
 	}
 
@@ -112,7 +113,7 @@ func AddFlightInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fid, err := model.AddFlightInfo(utils.GenerateRandom(),ftype.(string),from.(string),to.(string),btime,etime,food.(bool), (int)(sitenum.(float64)),income.(float64))
+	fid, err := model.AddFlightInfo(utils.GenerateRandom()%100000000,ftype.(string),from.(string),to.(string),btime,etime,food.(bool), (int)(sitenum.(float64)),income.(float64))
 	if err != nil{
 		log.Printf("AddFlightInfo model.AddFlightInfo error, err=%v",err)
 		log.Printf("fid=%v, ftype=%v, from=%v, to=%v, btime=%v, etime=%v, food=%v, sitenum=%v, income=%v",fid, ftype.(string),from.(string),to.(string),btime,etime,food.(bool),sitenum,income.(float64) )
@@ -136,7 +137,7 @@ func ChangeFlightInfo(w http.ResponseWriter, r *http.Request){
 	}
 	retMap := make(map[string]interface{})
 
-	if r.Method != "PUT"{
+	if r.Method != "POST"{
 		retMap["code"] = utils.METHODERR
 		utils.SendJson(&retMap,w)
 		return

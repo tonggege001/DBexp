@@ -40,13 +40,13 @@ func GetBookInfo(w http.ResponseWriter, r *http.Request){
 	fidListI := _fidList.([]interface{})
 	fidList := make([]int, 0)
 	for _,t := range fidListI{
-		fidList = append(fidList,t.(int))
+		fidList = append(fidList,(int)(t.(float64)))
 	}
 
 	mmap := make([]map[string]interface{},0)
 	for _,ffid := range fidList{
 		bi,ok := model.GetBookInfo(time,ffid,uid)
-		if ok{
+		if ok {
 			mmap = append(mmap,bi)
 		}
 	}
@@ -117,6 +117,7 @@ func BookFlight(w http.ResponseWriter, r *http.Request){
 
 	retMap["code"] = utils.OK
 	retMap["bookid"] = bookid
+	utils.SendJson(&retMap,w)
 	return
 }
 
@@ -222,6 +223,7 @@ func GetTicketInfo(w http.ResponseWriter, r *http.Request) {
 		log.Printf("GetTicketInfo GetTicketInfo error, err=%v",err)
 		retMap["code"] = utils.DATABASEERR
 		utils.SendJson(&retMap,w)
+		return
 	}
 	ticketInfo["code"] = utils.OK
 	utils.SendJson(&ticketInfo,w)
@@ -263,12 +265,17 @@ func GetMoneyInfo(w http.ResponseWriter, r *http.Request) {
 	if err != nil{
 		log.Printf("GetMoneyInfo GetBookInfoByBookId error, err=%v",err)
 		retMap["code"] = utils.DATABASEERR
+		utils.SendJson(&retMap,w)
 		return
 	}
-
+	if book_uid==0 ||uiduid == 0 || fid == 0 {
+		retMap["code"] = utils.PARAMERR
+		utils.SendJson(&retMap,w)
+		return
+	}
 	err = model.MakeMoneyInfo(bookid,uid,moneyIn,moneyOut,money,time.Now())
 	if err != nil{
-		log.Printf("GetMoneyInfo MakeTicketInfo error, err=%v",err)
+		log.Printf("GetMoneyInfo MakeMoneyInfo error, err=%v",err)
 		retMap["code"] = utils.DATABASEERR
 		return
 	}
@@ -278,6 +285,7 @@ func GetMoneyInfo(w http.ResponseWriter, r *http.Request) {
 		log.Printf("GetMoneyInfo GetMoneyInfo error, err=%v",err)
 		retMap["code"] = utils.DATABASEERR
 		utils.SendJson(&retMap,w)
+		return
 	}
 
 	uidname,err := model.GetNameByUid(uiduid)

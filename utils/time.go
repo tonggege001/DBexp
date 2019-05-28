@@ -1,6 +1,9 @@
 package utils
 
-import "time"
+import (
+	"strconv"
+	"time"
+)
 
 func GetTimeByStrSec(year string, month string, day string, hour string, minut string, second string) (time.Time, error){
 	if len(month) == 1{
@@ -55,46 +58,46 @@ func GetTimeByStr(str string) (time.Time, error){
 
 func GetTimeStrByTime(t time.Time)string{
 	yy := t.Year()
-	yearStr := string(yy)
+	yearStr := strconv.Itoa(yy)
 
 	mm := t.Month()
 	monthStr := ""
 	if mm<10{
-		monthStr = "0"+string(mm)
+		monthStr = "0"+strconv.Itoa(int(mm))
 	}else{
-		monthStr = string(mm)
+		monthStr = strconv.Itoa(int(mm))
 	}
 
 	dd := t.Day()
 	dayStr := ""
 	if dd < 10{
-		dayStr = "0"+string(dd)
+		dayStr = "0"+strconv.Itoa(dd)
 	}else{
-		dayStr = string(dd)
+		dayStr = strconv.Itoa(dd)
 	}
 
 	hh := t.Hour()
 	hourStr := ""
 	if hh < 10{
-		hourStr = "0"+string(hh)
+		hourStr = "0"+strconv.Itoa(hh)
 	}else{
-		hourStr = string(hh)
+		hourStr = strconv.Itoa(hh)
 	}
 
 	mi := t.Minute()
 	minuteStr := ""
 	if mi < 10{
-		minuteStr = "0"+ string(mi)
+		minuteStr = "0"+ strconv.Itoa(mi)
 	}else{
-		minuteStr = string(mi)
+		minuteStr = strconv.Itoa(mi)
 	}
 
 	ss := t.Second()
 	secondStr := ""
 	if ss<10{
-		secondStr = "0"+string(ss)
+		secondStr = "0"+strconv.Itoa(ss)
 	}else{
-		secondStr = string(ss)
+		secondStr = strconv.Itoa(ss)
 	}
 	return yearStr+monthStr+dayStr+hourStr+minuteStr+secondStr
 }
