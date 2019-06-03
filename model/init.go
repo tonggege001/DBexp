@@ -11,7 +11,7 @@ var MysqlDB *sql.DB
 
 func InitMysql(){
 	var err error
-	MysqlDB, err = sql.Open("mysql", "tonggege:127044@tcp(118.89.30.165:3306)/DBEXP?charset=utf8&parseTime=true")
+	MysqlDB, err = sql.Open("mysql", "xx:xx@tcp(xxx.xxx.xxx.xxx:3306)/DBEXP?charset=utf8&parseTime=true")
 
 	if err != nil{
 		log.Fatalf("InitMysql error, err=%v",err)
