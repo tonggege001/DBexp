@@ -10,49 +10,21 @@ import (
 
 func GetBookInfo(w http.ResponseWriter, r *http.Request){
 	defer utils.RecoverResolve("apis.GetBookInfo")
-	ok,uid,resq := TokenCheck(r)
+	ok,uid,_ := TokenCheck(r)
 	if !ok{
 		return
 	}
 	retMap := make(map[string]interface{})
 
-	if r.Method != "GET"{
+	if r.Method != "POST"{
 		retMap["code"] = utils.METHODERR
 		utils.SendJson(&retMap,w)
 		return
 	}
 
-	_time		:=		resq["time"]
-	_fidList	:=		resq["fid_list"]
-	if _time == nil || _fidList == nil{
-		retMap["code"] = utils.PARAMERR
-		utils.SendJson(&retMap,w)
-		return
-	}
-
-	time ,err := utils.GetTimeByStr(_time.(string))
-	if err != nil{
-		log.Printf("GetBookInfo utils.GetTimeByStr btime error, err=%v",err)
-		retMap["code"] = utils.PARAMERR
-		return
-	}
-
-	fidListI := _fidList.([]interface{})
-	fidList := make([]int, 0)
-	for _,t := range fidListI{
-		fidList = append(fidList,(int)(t.(float64)))
-	}
-
-	mmap := make([]map[string]interface{},0)
-	for _,ffid := range fidList{
-		bi,ok := model.GetBookInfo(time,ffid,uid)
-		if ok {
-			mmap = append(mmap,bi)
-		}
-	}
-
+	biList, ok := model.GetBookInfo(uid)
 	retMap["code"] = utils.OK
-	retMap["book_info_list"] = mmap
+	retMap["book_info_list"] = biList
 	utils.SendJson(&retMap,w)
 	return
 
@@ -81,14 +53,14 @@ func BookFlight(w http.ResponseWriter, r *http.Request){
 	_extra			:=		resq["extra"]
 	_siteid			:=		resq["siteid"]
 
-	if _fid==nil || _time==nil || _cost==nil || _siteid==nil{
+	if _fid == nil || _cost == nil || _siteid == nil || _time == nil  {
 		retMap["code"] = utils.PARAMERR
 		utils.SendJson(&retMap,w)
 		return
 	}
 	bookUid := uid
 	uiduid	:= uid
-	if _book_uid == nil{
+	if _book_uid != nil{
 		bookUid = (int)(_book_uid.(float64))
 	}
 
@@ -182,7 +154,7 @@ func GetTicketInfo(w http.ResponseWriter, r *http.Request) {
 	}
 	retMap := make(map[string]interface{})
 
-	if r.Method != "GET"{
+	if r.Method != "POST"{
 		retMap["code"] = utils.METHODERR
 		utils.SendJson(&retMap,w)
 		return
@@ -239,7 +211,7 @@ func GetMoneyInfo(w http.ResponseWriter, r *http.Request) {
 	}
 	retMap := make(map[string]interface{})
 
-	if r.Method != "GET"{
+	if r.Method != "POST"{
 		retMap["code"] = utils.METHODERR
 		utils.SendJson(&retMap,w)
 		return
@@ -304,9 +276,71 @@ func GetMoneyInfo(w http.ResponseWriter, r *http.Request) {
 }
 
 
+func ChangeSkin(w http.ResponseWriter, r *http.Request){
+	defer utils.RecoverResolve("ChangeSkin")
+	retMap := make(map[string]interface{})
+	if r.Method != "POST"{
+		retMap["code"] = utils.METHODERR
+		utils.SendJson(&retMap,w)
+		return
+	}
 
+	//产生个随机数
+	id := (int)(time.Now().Unix())
+	id = id % 5 + 1
+	QSS, err := model.GetSkin(id)
+	if err != nil{
+		log.Printf("ChangeSkin GetSkin error, err=%v ",err)
+		retMap["code"] = utils.DATABASEERR
+		utils.SendJson(&retMap,w)
+		return
+	}
 
+	retMap["code"] = 0
+	retMap["body"] = QSS
+	utils.SendJson(&retMap,w)
+	return
+}
 
+func MoneyFigure(w http.ResponseWriter, r *http.Request){
+	defer utils.RecoverResolve("MoneyFigure")
+	ok,_,resq := TokenCheck(r)
+	if !ok{
+		return
+	}
+	retMap := make(map[string]interface{})
+
+	if r.Method != "POST"{
+		retMap["code"] = utils.METHODERR
+		utils.SendJson(&retMap,w)
+		return
+	}
+
+	_fid		:=		resq["fid"]
+
+	if _fid ==nil {
+		retMap["code"] = utils.PARAMERR
+		utils.SendJson(&retMap,w)
+		return
+	}
+
+	fid := (int)(_fid.(float64))
+	sitenum,booknum,money,_ := model.MoneyFigure(fid)
+	/*if err != nil{
+		log.Printf("MoneyFigure model.MoneyFigure error, err=%v",err)
+		retMap["code"] = utils.PARAMERR
+		utils.SendJson(&retMap,w)
+		return
+	}
+*/
+	retMap["sitenum"] = sitenum
+	retMap["booknum"] = booknum
+	retMap["money"] = money
+	retMap["code"] = 0
+
+	utils.SendJson(&retMap, w)
+	return
+}
 
 
 

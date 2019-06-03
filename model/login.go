@@ -3,6 +3,7 @@ package model
 import (
 	"errors"
 	"fmt"
+	"log"
 	"strconv"
 )
 
@@ -102,6 +103,24 @@ func GetNameByUid(uid int)(string,error){
 
 	return name,nil
 }
+
+func SignIn(uid int, name string, ttype int) error {
+	tx := MysqlDB
+	stmt, err := tx.Prepare("insert into user_info(uid,user_info.name,total_cost,user_info.type) VALUES (?,?,?,?)")
+	if err != nil{
+		log.Printf("SignIn tx.Prepare error, err=%v",err)
+		return err
+	}
+	_, err = stmt.Exec(uid, name, 0.0, ttype)
+	if err != nil{
+		return err
+	}
+	defer stmt.Close()
+	return nil
+}
+
+
+
 
 
 

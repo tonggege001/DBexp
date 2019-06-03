@@ -103,6 +103,46 @@ func ChangeFlightInfo(fid int, ftype string, cityFrom string, cityTo string,time
 
 }
 
+func MoneyFigure(fid int)(int, int, float64,error){
+	tx := MysqlDB
+	rows, err := tx.Query("select sum(cost) from user_book where fid = ?",fid)
+	if err != nil{
+		log.Printf("MoneyFigure tx.Query error, err=%v", err)
+		return 0,0,0,err
+	}
+	money := 0.0
+	sitenum := 0
+	booknum := 0
+	for rows.Next(){
+		err := rows.Scan(&money)
+		if err != nil{
+			log.Printf("MoneyFigure Scan Error, err=%v",err)
+			return sitenum,booknum,money,err
+		}
+	}
+	rows.Close()
+
+	rows,err = tx.Query("select count(*) from flight_site where fid=?",fid)
+	for rows.Next(){
+		err := rows.Scan(&sitenum)
+		if err != nil{
+			log.Printf("MoneyFigure Scan 2 Error, err=%v",err)
+			return sitenum,booknum,money,err
+		}
+	}
+	rows.Close()
+
+	rows, err = tx.Query("select sitenum from flight_info where fid=?",fid)
+	for rows.Next(){
+		err := rows.Scan(&booknum)
+		if err != nil{
+			log.Printf("MoneyFigure Scan 2 Error, err=%v",err)
+			return sitenum,booknum,money,err
+		}
+	}
+	defer rows.Close()
+	return sitenum,booknum,money,nil
+}
 
 
 

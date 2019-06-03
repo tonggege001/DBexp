@@ -57,8 +57,10 @@ func FlightInfo(w http.ResponseWriter, r *http.Request){
 		flMap["to"] = f.CityTo
 		flMap["begin"] = utils.GetTimeStrByTime(f.TimeBegin)
 		flMap["end"] = utils.GetTimeStrByTime(f.TimeEnd)
-		flMap["site_not_ok"] = model.GetSiteBookIDByFid(f.Fid)
+		flMap["site_not_ok_list"] = model.GetSiteBookIDByFid(f.Fid)
 		flMap["sitenum"] = f.SiteNum
+		flMap["income"] = f.Income
+		flMap["food"] = f.Food
 		finfol = append(finfol,flMap)
 	}
 

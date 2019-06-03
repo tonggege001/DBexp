@@ -17,6 +17,6 @@ func InitMysql(){
 		log.Fatalf("InitMysql error, err=%v",err)
 	}
 
-	MysqlDB.SetMaxOpenConns(10)
+	MysqlDB.SetMaxOpenConns(100)
 	return
 }

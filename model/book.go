@@ -6,26 +6,29 @@ import (
 	"time"
 )
 
-func GetBookInfo(t time.Time, fid int, uid int)(map[string]interface{},bool){
+func GetBookInfo(uid int)([]map[string]interface{},bool){
 	tx := MysqlDB
-	ok := false
-	bi := make(map[string]interface{})
-	rows,err := tx.Query("select bookid,book_uid,user_book.uid,time,cost,extra,siteid from user_book,flight_site where user_book.fid=flight_site.fid and user_book.uid=flight_site.uid and user_book.fid=? and (user_book.book_uid=? or user_book.uid=?) and state != ?",
-	fid,uid,uid,3)
+	biList := make([]map[string]interface{},0)
+
+	rows,err := tx.Query("select distinct bookid,book_uid,user_book.uid,ftype,user_book.time,cost,extra,state,siteid from user_book,flight_site,flight_info where flight_info.fid = user_book.fid and user_book.fid=flight_site.fid and user_book.uid=flight_site.uid and (user_book.book_uid=? or user_book.uid=?) and state != ?",
+	uid,uid,3)
 	if err != nil{
 		log.Printf("GetBookInfo tx.Query error, err=%v",err)
 		return nil,false
 	}
 	defer rows.Close()
 	for rows.Next(){
+		bi := make(map[string]interface{})
 		bookid := 0
 		book_uid := 0
 		ubuid := 0
+		ftype := ""
 		_time := time.Now()
 		cost := 0.0
 		extre := ""
 		siteid := 0
-		err := rows.Scan(&bookid, &book_uid, &ubuid, &_time, &cost, &extre, &siteid)
+		state := 0
+		err := rows.Scan(&bookid, &book_uid, &ubuid, &ftype, &_time, &cost, &extre, &state,&siteid)
 		if err != nil{
 			log.Printf("GetBookInfo rows.Scan error, err=%v",err)
 			return nil,false
@@ -33,15 +36,15 @@ func GetBookInfo(t time.Time, fid int, uid int)(map[string]interface{},bool){
 		bi["bookid"] = bookid
 		bi["book_uid"] = book_uid
 		bi["uid"] = ubuid
-		bi["fid"] = fid
+		bi["ftype"] = ftype
 		bi["time"] = utils.GetTimeStrByTime(_time)
 		bi["income"] = cost
 		bi["extra"] = extre
 		bi["siteid"] = siteid
-		ok = true
-		break
+		bi["state"] = state
+		biList = append(biList,bi)
 	}
-	return bi,ok
+	return biList,true
 }
 
 func BookFlight(bookUid int, uiduid int, fid int, t time.Time, cost float64,extra string, siteid int)(int,error){
@@ -113,7 +116,7 @@ func GetBookInfoByBookId(bookid int)(int,int,int,int,error){
 //删除需要事务
 func DeleteUserBook(bookid int, uiduid int, fid int, siteid int) error{
 	tx, err := MysqlDB.Begin()
-	if err != nil{
+		if err != nil{
 		return err
 	}
 
@@ -233,18 +236,16 @@ func MakeTicketInfo(bookid int, uid int, fid int, tnow time.Time,toff time.Time,
 	for rows.Next() {
 		err := rows.Scan(&id)
 		if err != nil{
-			flag = 1
-			break
-		}
-
-		if id != -1{
-			flag = 1
+			flag = -1
 			break
 		}
 	}
+	if id != -1{
+		flag = 1
+	}
 	rows.Close()
 	//插入元素
-	if flag ==0{
+	if flag == 0 {
 		stmt, err := tx.Prepare("insert into take_ticket_info(bookid,uid,fid,time,offtime,extra,state) VALUES (?,?,?,?,?,?,?)")
 		if err != nil{
 			log.Printf("MakeTicketInfo tx.Prepare error, err=%v",err)
@@ -335,6 +336,16 @@ func MakeMoneyInfo(bookid int, uid int, moneyIn float64, moneyOut float64, money
 			return err
 		}
 		defer stmt.Close()
+
+	}
+	stmt,err := tx.Prepare("update user_book set state=1 where bookid=?")
+	if err != nil{
+		log.Printf("MakeMoneyInfo tx.Prepare 2 error, err=%v",err)
+		return err
+	}
+	_, err = stmt.Exec(bookid)
+	if err != nil{
+		return err
 	}
 	return nil
 }
@@ -378,6 +389,26 @@ func GetMoneyInfo(bookid int,fid int) (map[string]interface{},error){
 	}
 	defer rows.Close()
 	return mmap,nil
+}
+
+func GetSkin(id int)(string, error){
+	tx := MysqlDB
+	rows,err := tx.Query("select body from skin where id=?",id)
+	if err != nil{
+		log.Printf("GetSkin tx.Query error, err=%v",err)
+		return "", err
+	}
+	body := ""
+	for rows.Next(){
+		err := rows.Scan(&body)
+		if err != nil{
+			return "",err
+		}
+		break
+	}
+	defer rows.Close()
+	return body,nil
+
 }
 
 
